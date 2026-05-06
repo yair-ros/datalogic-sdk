@@ -1,0 +1,220 @@
+openapi: 3.1.0
+info:
+  title: Datalogics Shipping API
+  version: 0.1.0
+  description: |
+    OpenAPI contract for the Datalogics create-shipping endpoint used by this
+    SDK. The response schema is intentionally flexible because the vendor
+    documentation does not define a concrete response body.
+servers:
+  - url: https://connect.datalogics.co.il
+paths:
+  /rest/w_create_shipping:
+    post:
+      operationId: createShipping
+      summary: Create a shipping order
+      description: Creates a shipping order in Datalogics.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateShippingRequest"
+            examples:
+              delivery:
+                summary: Delivery shipment
+                value:
+                  token: YOUR_AUTHENTICATION_TOKEN
+                  order:
+                    id: 123
+                    number: ORD-123
+                    shipping:
+                      street: Herzl
+                      city: Tel Aviv
+                      first_name: Dana
+                      last_name: Cohen
+                      postcode: "6100000"
+                      house: "10"
+                      apartment: "3"
+                      phone: "0501234567"
+                    comment: Leave at reception
+                  origin:
+                    contract: "1234"
+                    company_name: Acme Ltd
+                    city: Jerusalem
+                    street: Jaffa
+                    house: "1"
+                    phone: "021234567"
+                    email: ops@example.com
+              pickup:
+                summary: Pickup-location shipment
+                value:
+                  token: YOUR_AUTHENTICATION_TOKEN
+                  order:
+                    id: 123
+                    number: ORD-123
+                    shipping:
+                      street: Herzl
+                      city: Tel Aviv
+                      first_name: Dana
+                      last_name: Cohen
+                      house: "10"
+                      phone: "0501234567"
+                      n_code: PICKUP_LOCATION_ID
+                  origin:
+                    contract: "1234"
+                    company_name: Acme Ltd
+                    city: Jerusalem
+                    street: Jaffa
+                    house: "1"
+                    phone: "021234567"
+                    email: ops@example.com
+      responses:
+        "200":
+          description: Shipping order creation result.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateShippingResponse"
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateShippingResponse"
+        "401":
+          description: Authentication failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateShippingResponse"
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateShippingResponse"
+components:
+  schemas:
+    CreateShippingRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - token
+        - order
+        - origin
+      properties:
+        token:
+          type: string
+          minLength: 1
+          description: Authentication token provided by Datalogics.
+        order:
+          $ref: "#/components/schemas/Order"
+        origin:
+          $ref: "#/components/schemas/Origin"
+    Order:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - number
+        - shipping
+      properties:
+        id:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+          description: Unique identifier for the order.
+        number:
+          oneOf:
+            - type: integer
+            - type: string
+              minLength: 1
+          description: Order number associated with the shipment.
+        shipping:
+          $ref: "#/components/schemas/ShippingDetails"
+        comment:
+          type: string
+          minLength: 1
+          description: Additional comment or instruction for the shipment.
+    ShippingDetails:
+      type: object
+      additionalProperties: false
+      required:
+        - street
+        - city
+        - first_name
+        - last_name
+        - house
+        - phone
+      properties:
+        street:
+          type: string
+          minLength: 1
+        city:
+          type: string
+          minLength: 1
+        first_name:
+          type: string
+          minLength: 1
+        last_name:
+          type: string
+          minLength: 1
+        postcode:
+          type: string
+          minLength: 1
+        house:
+          type: string
+          minLength: 1
+        apartment:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          minLength: 1
+        n_code:
+          type: string
+          minLength: 1
+          description: Pickup location ID when the customer chooses pickup.
+    Origin:
+      type: object
+      additionalProperties: false
+      required:
+        - contract
+        - company_name
+        - city
+        - street
+        - house
+        - phone
+        - email
+      properties:
+        contract:
+          type: string
+          minLength: 4
+          maxLength: 4
+          description: Contract number. Must be exactly 4 characters.
+        company_name:
+          type: string
+          minLength: 1
+          description: Company name printed on the label.
+        city:
+          type: string
+          minLength: 1
+        street:
+          type: string
+          minLength: 1
+        house:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          minLength: 1
+          description: Business phone number.
+        email:
+          type: string
+          format: email
+          minLength: 1
+          description: Business email address.
+    CreateShippingResponse:
+      description: Vendor response body. Shape is not defined in the provided documentation.
