@@ -40,7 +40,7 @@ datalogic_sdk = ["py.typed"]
 [tool.mypy]
 python_version = "3.9"
 strict = true
-files = ["src"]
+files = ["src", "scripts"]
 
 [tool.ruff]
 line-length = 100

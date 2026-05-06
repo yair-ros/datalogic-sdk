@@ -48,9 +48,13 @@ make lint
 make typecheck
 make test
 make package
+make release
 ```
 
 `make package` builds the source distribution and wheel into `dist/`.
+`make release` increments the latest `vX.Y.Z` tag by one patch version, updates
+`pyproject.toml`, runs verification, commits the version bump, creates an
+annotated tag, pushes the branch, and pushes the tag.
 
 ## CI/CD
 
@@ -71,12 +75,16 @@ GitHub Actions workflows live in `.github/workflows/`.
   - Workflow name: `release.yml`
   - Environment name: `pypi`
 
-To create a GitHub Release, bump the version in `pyproject.toml`, then push a
-matching tag:
+To create a GitHub Release and trigger PyPI publishing:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+make release
+```
+
+If your virtual environment is not activated, pass the interpreter explicitly:
+
+```bash
+make release PYTHON=.venv/bin/python
 ```
 
 ## Usage
@@ -133,7 +141,37 @@ The SDK validates the request before sending it:
 ## Error Handling
 
 ```python
-from datalogic_sdk import DatalogicAPIError, DatalogicValidationError
+from datalogic_sdk import (
+    DatalogicAPIError,
+    DatalogicClient,
+    DatalogicValidationError,
+    Order,
+    Origin,
+    ShippingDetails,
+)
+
+client = DatalogicClient("YOUR_AUTHENTICATION_TOKEN")
+order = Order(
+    id=123,
+    number="ORD-123",
+    shipping=ShippingDetails(
+        street="Herzl",
+        city="Tel Aviv",
+        first_name="Dana",
+        last_name="Cohen",
+        house="10",
+        phone="0501234567",
+    ),
+)
+origin = Origin(
+    contract="1234",
+    company_name="Acme Ltd",
+    city="Jerusalem",
+    street="Jaffa",
+    house="1",
+    phone="021234567",
+    email="ops@example.com",
+)
 
 try:
     response = client.create_shipping(order=order, origin=origin)
@@ -154,5 +192,7 @@ https://connect.datalogics.co.il/rest/w_create_shipping
 You can override the base URL for testing:
 
 ```python
+from datalogic_sdk import DatalogicClient
+
 client = DatalogicClient("token", base_url="https://example.test")
 ```
