@@ -60,9 +60,9 @@ annotated tag, pushes the branch, and pushes the tag.
 
 GitHub Actions workflows live in `.github/workflows/`.
 
-- `ci.yml` runs on pushes to `main`, pull requests to `main`, and manual
-  dispatch. It installs the package with dev tooling, then runs lint,
-  typecheck, tests, and package build across Python 3.9 through 3.13.
+- `ci.yml` runs on pull requests to `main` and manual dispatch. It installs the
+  package with dev tooling, then runs lint, typecheck, tests, and package build
+  across Python 3.9 through 3.13.
 - `release.yml` runs on tags matching `v*` and manual dispatch. It runs the
   same checks, builds `dist/`, uploads the distribution files as a workflow
   artifact, creates a GitHub Release for tag builds, and publishes to PyPI
