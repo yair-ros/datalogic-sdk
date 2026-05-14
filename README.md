@@ -47,6 +47,8 @@ make format
 make lint
 make typecheck
 make test
+make check
+make integration-test
 make package
 make release
 ```
@@ -55,6 +57,8 @@ make release
 `make release` increments the latest `vX.Y.Z` tag by one patch version, updates
 `pyproject.toml`, runs verification, commits the version bump, creates an
 annotated tag, pushes the branch, and pushes the tag.
+`make check` runs lint, typecheck, and tests.
+`make integration-test` runs the real API integration script.
 
 ## CI/CD
 
@@ -196,3 +200,42 @@ from datalogic_sdk import DatalogicClient
 
 client = DatalogicClient("token", base_url="https://example.test")
 ```
+
+## Real API Test
+
+The repository includes a local integration-test script:
+
+```bash
+PYTHONPATH=src python scripts/integration_test.py
+```
+
+The test reads local secrets and addresses from:
+
+```text
+scripts/integration_test.env
+```
+
+That file is gitignored. The repository only includes:
+
+```text
+scripts/integration_test.env.example
+```
+
+To use it:
+
+1. Copy `scripts/integration_test.env.example` to `scripts/integration_test.env`.
+2. Fill your real token and address data in `scripts/integration_test.env`.
+3. Set `DATALOGIC_CONFIRM_REAL_API_CALL=yes` in that file.
+4. Run `make integration-test` or `PYTHONPATH=src python scripts/integration_test.py`.
+5. Read the warning in the terminal and type `yes` to approve the real shipment creation.
+
+This can create a real shipment. Use a sandbox/test token if Datalogics provides
+one, and do not commit real tokens, customer phones, or real addresses.
+
+The script fails fast if:
+
+- `scripts/integration_test.env` does not exist
+- `DATALOGIC_CONFIRM_REAL_API_CALL` is not `yes`
+- a required value is missing
+- a required value is still one of the example placeholders such as `YOUR_TOKEN`
+- the terminal confirmation is not explicitly approved
