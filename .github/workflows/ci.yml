@@ -6,6 +6,10 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -13,6 +17,7 @@ jobs:
   checks:
     name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     strategy:
       fail-fast: false
@@ -47,6 +52,26 @@ jobs:
 
       - name: Test
         run: make test PYTHON=python
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - name: Install package and dev tools
+        run: |
+          python -m pip install --upgrade pip
+          make install PYTHON=python
 
       - name: Build package
         run: make package PYTHON=python

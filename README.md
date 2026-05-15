@@ -1,6 +1,8 @@
 # datalogic-sdk
 
-Python SDK for the Datalogics shipping API.
+Independent/community Python SDK for the Datalogics shipping API.
+
+This is not an official Datalogics SDK. It is an independent/community project.
 
 ## Documentation
 
@@ -8,6 +10,9 @@ Python SDK for the Datalogics shipping API.
 - [SDK API reference](docs/api.md): Python classes, methods, return values, and exceptions.
 - [OpenAPI contract](docs/openapi.yaml): raw Datalogics HTTP API contract for
   `POST /rest/w_create_shipping`.
+- [Contributing guide](CONTRIBUTING.md)
+- [Changelog](CHANGELOG.md)
+- [Security policy](SECURITY.md)
 
 The OpenAPI file documents the vendor HTTP endpoint, not the Python SDK itself.
 It is included as a reference for API tooling, contract review, mock servers, or
@@ -65,12 +70,11 @@ annotated tag, pushes the branch, and pushes the tag.
 GitHub Actions workflows live in `.github/workflows/`.
 
 - `ci.yml` runs on pull requests to `main` and manual dispatch. It installs the
-  package with dev tooling, then runs lint, typecheck, tests, and package build
-  across Python 3.9 through 3.13.
-- `release.yml` runs on tags matching `v*` and manual dispatch. It runs the
-  same checks, builds `dist/`, uploads the distribution files as a workflow
-  artifact, creates a GitHub Release for tag builds, and publishes to PyPI
-  through Trusted Publishing.
+  package with dev tooling, then runs lint, typecheck, and tests across Python
+  3.9 through 3.13, and builds the package once on Python 3.13.
+- `release.yml` runs only on tags matching `v*`. It runs the same checks,
+  builds `dist/`, uploads the distribution files as a workflow artifact,
+  creates a GitHub Release, and publishes to PyPI through Trusted Publishing.
 - PyPI publishing does not use a stored API token. Configure a pending trusted
   publisher in PyPI with these values:
   - PyPI project name: `datalogic-sdk`
@@ -239,3 +243,7 @@ The script fails fast if:
 - a required value is missing
 - a required value is still one of the example placeholders such as `YOUR_TOKEN`
 - the terminal confirmation is not explicitly approved
+
+## License
+
+This project is licensed under the MIT license. See [LICENSE](LICENSE).
