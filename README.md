@@ -114,11 +114,21 @@ response = client.create_shipping(
             postcode="6100000",
             house="10",
             apartment="3",
+            email="dana@example.com",
+            entrance="B",
+            floor="4",
             phone="0501234567",
             # Use n_code only when the customer chose a pickup location.
             n_code="PICKUP_LOCATION_ID",
+            # Use extra_fields for undocumented keys accepted by Datalogics.
+            extra_fields={
+                "site_code": "SITE-7",
+            },
         ),
         comment="Leave at reception",
+        extra_fields={
+            "delivery_time": "16:00-20:00",
+        },
     ),
     origin=Origin(
         contract="1234",
@@ -142,9 +152,39 @@ The SDK validates the request before sending it:
 - `token` is required.
 - `order.id` and `order.number` are required.
 - Required shipping fields: `street`, `city`, `first_name`, `last_name`, `house`, `phone`.
-- Optional shipping fields: `postcode`, `apartment`, `n_code`.
+- Optional shipping fields: `postcode`, `apartment`, `email`, `company`,
+  `entrance`, `floor`, `n_code`.
+- `order.extra_fields`, `order.shipping.extra_fields`, and
+  `origin.extra_fields` accept additional JSON-serializable keys for
+  undocumented Datalogics fields.
 - `origin.contract` must be exactly 4 characters.
 - Required origin fields: `company_name`, `city`, `street`, `house`, `phone`, `email`.
+
+## Field Coverage
+
+The official endpoint doc is narrower than the WooCommerce plugin shipped by
+Datalogics. The plugin sends the full WooCommerce order object, including
+standard shipping fields and order meta, to the same `w_create_shipping`
+endpoint.
+
+Based on the plugin code, this SDK now explicitly supports the common shipping
+fields that appear in the Datalogics checkout UI:
+
+- recipient name
+- mobile phone
+- email
+- city
+- street
+- house
+- entrance
+- floor
+- apartment
+- pickup location (`n_code`)
+- notes (`order.comment`)
+
+For fields that exist in the Datalogics UI but are not clearly documented in
+the raw API contract, use `extra_fields`. Examples include custom site codes,
+delivery-time selections, or other account-specific keys.
 
 ## Error Handling
 

@@ -6,6 +6,22 @@ The format is based on Keep a Changelog and this project uses SemVer.
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-05-15
+
+### Added
+
+- Explicit support for `shipping.email`, `shipping.company`,
+  `shipping.entrance`, and `shipping.floor`
+- `extra_fields` pass-through support on `ShippingDetails`, `Order`, and
+  `Origin`
+
+### Changed
+
+- README and SDK docs now document broader field coverage based on the
+  Datalogics WooCommerce plugin behavior
+- Integration test script and example env now support the new optional shipping
+  fields and JSON extra-field payloads
+
 ## [0.1.3] - 2026-05-15
 
 ### Added

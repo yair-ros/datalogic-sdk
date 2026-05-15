@@ -39,10 +39,15 @@ def valid_order():
             last_name="Cohen",
             house="10",
             apartment="3",
+            email="dana@example.com",
+            entrance="B",
+            floor="4",
             phone="0501234567",
             n_code="PICKUP-1",
+            extra_fields={"site_code": "SITE-7"},
         ),
         comment="Leave at reception",
+        extra_fields={"delivery_time": "16:00-20:00"},
     )
 
 
@@ -79,6 +84,11 @@ class DatalogicClientTests(unittest.TestCase):
         self.assertEqual(call["headers"]["Content-Type"], "application/json")
         self.assertEqual(call["payload"]["token"], "token-123")
         self.assertEqual(call["payload"]["order"]["shipping"]["n_code"], "PICKUP-1")
+        self.assertEqual(call["payload"]["order"]["shipping"]["email"], "dana@example.com")
+        self.assertEqual(call["payload"]["order"]["shipping"]["entrance"], "B")
+        self.assertEqual(call["payload"]["order"]["shipping"]["floor"], "4")
+        self.assertEqual(call["payload"]["order"]["shipping"]["site_code"], "SITE-7")
+        self.assertEqual(call["payload"]["order"]["delivery_time"], "16:00-20:00")
         self.assertEqual(call["payload"]["origin"]["contract"], "1234")
 
     def test_optional_none_fields_are_omitted(self):
@@ -103,7 +113,30 @@ class DatalogicClientTests(unittest.TestCase):
         self.assertNotIn("comment", payload["order"])
         self.assertNotIn("postcode", payload["order"]["shipping"])
         self.assertNotIn("apartment", payload["order"]["shipping"])
+        self.assertNotIn("email", payload["order"]["shipping"])
+        self.assertNotIn("company", payload["order"]["shipping"])
+        self.assertNotIn("entrance", payload["order"]["shipping"])
+        self.assertNotIn("floor", payload["order"]["shipping"])
         self.assertNotIn("n_code", payload["order"]["shipping"])
+
+    def test_extra_fields_cannot_override_reserved_keys(self):
+        order = Order(
+            id=123,
+            number=456,
+            shipping=ShippingDetails(
+                street="Herzl",
+                city="Tel Aviv",
+                first_name="Dana",
+                last_name="Cohen",
+                house="10",
+                phone="0501234567",
+                extra_fields={"street": "Other"},
+            ),
+        )
+        client = DatalogicClient("token-123", transport=FakeTransport(None))
+
+        with self.assertRaises(DatalogicValidationError):
+            client.create_shipping(order=order, origin=valid_origin())
 
     def test_contract_must_be_four_characters(self):
         origin = Origin(

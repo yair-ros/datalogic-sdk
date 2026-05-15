@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from datalogic_sdk import DatalogicAPIError, DatalogicClient, Order, Origin, ShippingDetails
 
@@ -33,6 +35,10 @@ class Config:
     shipping_last_name: str
     shipping_house: str
     shipping_phone: str
+    shipping_email: str | None
+    shipping_company: str | None
+    shipping_entrance: str | None
+    shipping_floor: str | None
     origin_contract: str
     origin_company_name: str
     origin_city: str
@@ -44,6 +50,9 @@ class Config:
     shipping_apartment: str | None
     shipping_n_code: str | None
     order_comment: str | None
+    shipping_extra_fields: dict[str, Any] | None
+    order_extra_fields: dict[str, Any] | None
+    origin_extra_fields: dict[str, Any] | None
 
 
 def load_config() -> Config:
@@ -59,6 +68,10 @@ def load_config() -> Config:
         shipping_last_name=required_value(values, "DATALOGIC_SHIPPING_LAST_NAME"),
         shipping_house=required_value(values, "DATALOGIC_SHIPPING_HOUSE"),
         shipping_phone=required_value(values, "DATALOGIC_SHIPPING_PHONE"),
+        shipping_email=optional_value(values, "DATALOGIC_SHIPPING_EMAIL"),
+        shipping_company=optional_value(values, "DATALOGIC_SHIPPING_COMPANY"),
+        shipping_entrance=optional_value(values, "DATALOGIC_SHIPPING_ENTRANCE"),
+        shipping_floor=optional_value(values, "DATALOGIC_SHIPPING_FLOOR"),
         origin_contract=required_value(values, "DATALOGIC_ORIGIN_CONTRACT"),
         origin_company_name=required_value(values, "DATALOGIC_ORIGIN_COMPANY_NAME"),
         origin_city=required_value(values, "DATALOGIC_ORIGIN_CITY"),
@@ -70,6 +83,9 @@ def load_config() -> Config:
         shipping_apartment=optional_value(values, "DATALOGIC_SHIPPING_APARTMENT"),
         shipping_n_code=optional_value(values, "DATALOGIC_SHIPPING_N_CODE"),
         order_comment=optional_value(values, "DATALOGIC_ORDER_COMMENT"),
+        shipping_extra_fields=optional_json_value(values, "DATALOGIC_SHIPPING_EXTRA_FIELDS_JSON"),
+        order_extra_fields=optional_json_value(values, "DATALOGIC_ORDER_EXTRA_FIELDS_JSON"),
+        origin_extra_fields=optional_json_value(values, "DATALOGIC_ORIGIN_EXTRA_FIELDS_JSON"),
     )
 
 
@@ -120,9 +136,25 @@ def required_value(values: dict[str, str], key: str) -> str:
 
 def optional_value(values: dict[str, str], key: str) -> str | None:
     value = values.get(key, "").strip()
-    if value:
+    if value and value != "****":
         return value
     return None
+
+
+def optional_json_value(values: dict[str, str], key: str) -> dict[str, Any] | None:
+    value = optional_value(values, key)
+    if value is None:
+        return None
+
+    try:
+        parsed = json.loads(value)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"Invalid JSON in {ENV_FILE.name}: {key}") from exc
+
+    if not isinstance(parsed, dict):
+        raise SystemExit(f"{key} must be a JSON object in {ENV_FILE.name}")
+
+    return parsed
 
 
 def main() -> None:
@@ -141,10 +173,16 @@ def main() -> None:
             postcode=config.shipping_postcode,
             house=config.shipping_house,
             apartment=config.shipping_apartment,
+            email=config.shipping_email,
+            company=config.shipping_company,
+            entrance=config.shipping_entrance,
+            floor=config.shipping_floor,
             phone=config.shipping_phone,
             n_code=config.shipping_n_code,
+            extra_fields=config.shipping_extra_fields,
         ),
         comment=config.order_comment,
+        extra_fields=config.order_extra_fields,
     )
     origin = Origin(
         contract=config.origin_contract,
@@ -154,6 +192,7 @@ def main() -> None:
         house=config.origin_house,
         phone=config.origin_phone,
         email=config.origin_email,
+        extra_fields=config.origin_extra_fields,
     )
 
     try:
@@ -183,11 +222,26 @@ def confirm_real_api_call(config: Config) -> None:
         f"{COLOR_CYAN}Recipient:{COLOR_RESET} "
         f"{config.shipping_first_name} {config.shipping_last_name} / {config.shipping_phone}"
     )
+    if config.shipping_email:
+        print(f"{COLOR_CYAN}Recipient email:{COLOR_RESET} {config.shipping_email}")
+    if config.shipping_company:
+        print(f"{COLOR_CYAN}Recipient company:{COLOR_RESET} {config.shipping_company}")
+    if config.shipping_entrance or config.shipping_floor:
+        print(
+            f"{COLOR_CYAN}Building details:{COLOR_RESET} "
+            f"entrance={config.shipping_entrance or '-'} floor={config.shipping_floor or '-'}"
+        )
     print(
         f"{COLOR_CYAN}Origin:{COLOR_RESET} "
         f"{config.origin_company_name}, {config.origin_city}, "
         f"{config.origin_street} {config.origin_house}"
     )
+    if config.shipping_extra_fields:
+        print(f"{COLOR_CYAN}Shipping extras:{COLOR_RESET} {config.shipping_extra_fields}")
+    if config.order_extra_fields:
+        print(f"{COLOR_CYAN}Order extras:{COLOR_RESET} {config.order_extra_fields}")
+    if config.origin_extra_fields:
+        print(f"{COLOR_CYAN}Origin extras:{COLOR_RESET} {config.origin_extra_fields}")
     answer = input("Type 'yes' to continue: ").strip().lower()
     if answer != "yes":
         raise SystemExit("Cancelled.")

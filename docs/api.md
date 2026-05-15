@@ -55,7 +55,12 @@ Optional fields:
 
 - `postcode`
 - `apartment`
+- `email`
+- `company`
+- `entrance`
+- `floor`
 - `n_code`
+- `extra_fields`
 
 ### `Order`
 
@@ -68,6 +73,7 @@ Required fields:
 Optional fields:
 
 - `comment`
+- `extra_fields`
 
 ### `Origin`
 
@@ -85,6 +91,8 @@ Validation:
 
 - `contract` must be exactly 4 characters.
 - `email` must contain `@`.
+- `extra_fields` on all models must be mappings with string keys and
+  JSON-serializable values, and cannot override reserved SDK field names.
 
 ## `DatalogicResponse`
 

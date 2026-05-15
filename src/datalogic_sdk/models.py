@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -30,6 +32,35 @@ def _optional_text(value: str | None, field_name: str) -> str | None:
     return value
 
 
+def _optional_extra_fields(
+    value: Mapping[str, Any] | None,
+    field_name: str,
+    *,
+    reserved_keys: set[str],
+) -> dict[str, Any]:
+    if value is None:
+        return {}
+    if not isinstance(value, Mapping):
+        raise DatalogicValidationError(f"{field_name} must be a mapping when provided")
+
+    normalized: dict[str, Any] = {}
+    for key, item in value.items():
+        if not isinstance(key, str) or not key.strip():
+            raise DatalogicValidationError(f"{field_name} keys must be non-empty strings")
+        if key in reserved_keys:
+            raise DatalogicValidationError(f"{field_name} cannot override reserved key '{key}'")
+        normalized[key] = item
+
+    try:
+        json.dumps(normalized, ensure_ascii=False)
+    except (TypeError, ValueError) as exc:
+        raise DatalogicValidationError(
+            f"{field_name} must contain JSON-serializable values"
+        ) from exc
+
+    return normalized
+
+
 @dataclass(frozen=True)
 class ShippingDetails:
     """Destination details for an order shipment."""
@@ -42,7 +73,12 @@ class ShippingDetails:
     phone: str
     postcode: str | None = None
     apartment: str | None = None
+    email: str | None = None
+    company: str | None = None
+    entrance: str | None = None
+    floor: str | None = None
     n_code: str | None = None
+    extra_fields: Mapping[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         payload = {
@@ -53,10 +89,22 @@ class ShippingDetails:
             "postcode": _optional_text(self.postcode, "order.shipping.postcode"),
             "house": _require_text(self.house, "order.shipping.house"),
             "apartment": _optional_text(self.apartment, "order.shipping.apartment"),
+            "email": _optional_text(self.email, "order.shipping.email"),
+            "company": _optional_text(self.company, "order.shipping.company"),
+            "entrance": _optional_text(self.entrance, "order.shipping.entrance"),
+            "floor": _optional_text(self.floor, "order.shipping.floor"),
             "phone": _require_text(self.phone, "order.shipping.phone"),
             "n_code": _optional_text(self.n_code, "order.shipping.n_code"),
         }
-        return {key: value for key, value in payload.items() if value is not None}
+        payload = {key: value for key, value in payload.items() if value is not None}
+        payload.update(
+            _optional_extra_fields(
+                self.extra_fields,
+                "order.shipping.extra_fields",
+                reserved_keys=set(payload),
+            )
+        )
+        return payload
 
 
 @dataclass(frozen=True)
@@ -67,6 +115,7 @@ class Order:
     number: int | str
     shipping: ShippingDetails
     comment: str | None = None
+    extra_fields: Mapping[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         if not isinstance(self.shipping, ShippingDetails):
@@ -78,7 +127,15 @@ class Order:
             "shipping": self.shipping.to_dict(),
             "comment": _optional_text(self.comment, "order.comment"),
         }
-        return {key: value for key, value in payload.items() if value is not None}
+        payload = {key: value for key, value in payload.items() if value is not None}
+        payload.update(
+            _optional_extra_fields(
+                self.extra_fields,
+                "order.extra_fields",
+                reserved_keys=set(payload),
+            )
+        )
+        return payload
 
 
 @dataclass(frozen=True)
@@ -92,6 +149,7 @@ class Origin:
     house: str
     phone: str
     email: str
+    extra_fields: Mapping[str, Any] | None = None
 
     def to_dict(self) -> dict[str, Any]:
         contract = _require_text(self.contract, "origin.contract")
@@ -102,7 +160,7 @@ class Origin:
         if "@" not in email:
             raise DatalogicValidationError("origin.email must be a valid email address")
 
-        return {
+        payload = {
             "contract": contract,
             "company_name": _require_text(self.company_name, "origin.company_name"),
             "city": _require_text(self.city, "origin.city"),
@@ -111,3 +169,11 @@ class Origin:
             "phone": _require_text(self.phone, "origin.phone"),
             "email": email,
         }
+        payload.update(
+            _optional_extra_fields(
+                self.extra_fields,
+                "origin.extra_fields",
+                reserved_keys=set(payload),
+            )
+        )
+        return payload

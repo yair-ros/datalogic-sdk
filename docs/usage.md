@@ -21,10 +21,15 @@ response = client.create_shipping(
             postcode="6100000",
             house="10",
             apartment="3",
+            email="dana@example.com",
+            entrance="B",
+            floor="4",
             phone="0501234567",
             n_code="PICKUP_LOCATION_ID",
+            extra_fields={"site_code": "SITE-7"},
         ),
         comment="Leave at reception",
+        extra_fields={"delivery_time": "16:00-20:00"},
     ),
     origin=Origin(
         contract="1234",
@@ -45,6 +50,13 @@ print(response.data)
 
 Set `ShippingDetails.n_code` only when the customer chooses a pickup location.
 Use the pickup location ID provided by Datalogics.
+
+## Undocumented Fields
+
+The Datalogics WooCommerce plugin sends a broader order object than the minimal
+HTTP example in the vendor docs. If your account uses additional fields such as
+site codes or delivery-time selections, pass them through `extra_fields` on
+`Order`, `ShippingDetails`, or `Origin`.
 
 ## Errors
 
