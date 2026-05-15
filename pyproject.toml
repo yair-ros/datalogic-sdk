@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datalogic-sdk"
-version = "0.1.2"
+version = "0.1.3"
 description = "Independent/community Python SDK for the Datalogics shipping API"
 readme = "README.md"
 license = "MIT"
