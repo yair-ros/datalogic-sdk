@@ -6,11 +6,31 @@ The format is based on Keep a Changelog and this project uses SemVer.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-05-15
+
+### Added
+
+- `LICENSE`
+- `SECURITY.md`
+- `CONTRIBUTING.md`
+- `CHANGELOG.md`
+- package metadata for GitHub URLs
+
+### Changed
+
+- README now states this is an independent/community SDK, not an official
+  Datalogics SDK
+- `release.yml` now publishes only on pushed `v*` tags
+- CI now uses concurrency, timeouts, and builds the package once on Python 3.13
+- security guidance now points upstream Datalogics platform/account issues to
+  the Datalogics support ticket page
+
 ## [0.1.2] - 2026-05-14
 
 ### Added
 
 - Local integration test flow using `scripts/integration_test.env`
+- `scripts/integration_test.env.example`
 - `make check`
 - `make integration-test`
 
