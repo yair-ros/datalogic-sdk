@@ -58,6 +58,14 @@ HTTP example in the vendor docs. If your account uses additional fields such as
 site codes or delivery-time selections, pass them through `extra_fields` on
 `Order`, `ShippingDetails`, or `Origin`.
 
+Useful implementation references:
+
+- <https://plugins.svn.wordpress.org/datalogics/trunk/>
+- <https://plugins.trac.wordpress.org/browser/datalogics/trunk>
+
+Treat those as behavior references for the WooCommerce integration, not as the
+formal raw HTTP API contract.
+
 ## Errors
 
 ```python

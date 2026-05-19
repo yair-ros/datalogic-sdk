@@ -186,6 +186,13 @@ For fields that exist in the Datalogics UI but are not clearly documented in
 the raw API contract, use `extra_fields`. Examples include custom site codes,
 delivery-time selections, or other account-specific keys.
 
+Reference implementations used during field-coverage review:
+
+- SVN source: <https://plugins.svn.wordpress.org/datalogics/trunk/>
+- Trac browser: <https://plugins.trac.wordpress.org/browser/datalogics/trunk>
+
+These links are implementation references, not the formal API contract.
+
 ## Error Handling
 
 ```python
