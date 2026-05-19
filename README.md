@@ -1,8 +1,15 @@
 # datalogic-sdk
 
+[![PyPI version](https://img.shields.io/pypi/v/datalogic-sdk.svg)](https://pypi.org/project/datalogic-sdk/)
+[![Python versions](https://img.shields.io/pypi/pyversions/datalogic-sdk.svg)](https://pypi.org/project/datalogic-sdk/)
+[![License](https://img.shields.io/pypi/l/datalogic-sdk.svg)](LICENSE)
+[![CI](https://github.com/yair-ros/datalogic-sdk/actions/workflows/ci.yml/badge.svg)](https://github.com/yair-ros/datalogic-sdk/actions/workflows/ci.yml)
+
 Independent/community Python SDK for the Datalogics shipping API.
 
 This is not an official Datalogics SDK. It is an independent/community project.
+
+PyPI: <https://pypi.org/project/datalogic-sdk/>
 
 ## Documentation
 
@@ -19,6 +26,12 @@ It is included as a reference for API tooling, contract review, mock servers, or
 future code generation. The SDK does not load it at runtime.
 
 ## Installation
+
+From PyPI:
+
+```bash
+python -m pip install datalogic-sdk
+```
 
 From this repository:
 
